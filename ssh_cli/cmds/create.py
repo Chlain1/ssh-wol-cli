@@ -9,7 +9,15 @@ from termcolor import cprint
 from .interface import Command
 from ..config import DEFAULT_USER, SSH_DEFAULT_PORT, CONFIG_FILE_PATH, KEY_DIR_PATH, KEY_TYPE
 from ..lib import show_host_config
-from ..validation import is_valid_hostname, is_not_empty, host_exists, is_number
+from ..metadata import set_host_macs
+from ..validation import (
+    is_valid_hostname,
+    is_not_empty,
+    host_exists,
+    is_number,
+    is_valid_mac_addresses,
+    parse_mac_addresses,
+)
 
 
 def _create_key_file(host) -> str or int or None:
@@ -74,10 +82,18 @@ class CreateHostConfig(Command):
                 default=SSH_DEFAULT_PORT,
                 validate=is_number
             ),
+            inquirer.Text(
+                "wol_macs",
+                message="Wake-on-LAN MAC addresses (optional, max 2, comma-separated)",
+                validate=is_valid_mac_addresses,
+                default=""
+            ),
         ]
 
         if (answers := inquirer.prompt(host_config_questions)) is None:
             return 1
+
+        wol_macs = parse_mac_addresses(answers["wol_macs"])
 
         c.add(answers["host"], Hostname=answers["hostname"], User=answers["user"], Port=answers["port"])
 
@@ -85,7 +101,7 @@ class CreateHostConfig(Command):
             c.set(answers["host"], IdentityFile=key_file)
 
         print("Host configured with the following configuration:")
-        show_host_config(answers["host"], c)
+        show_host_config(answers["host"], c, mac_addresses=wol_macs)
 
         if not inquirer.confirm("Do you want to save this host?", default=True):
             if key_file:
@@ -95,6 +111,7 @@ class CreateHostConfig(Command):
             return 1
 
         c.write(CONFIG_FILE_PATH)
+        set_host_macs(answers["host"], wol_macs)
         cprint(f'Host {answers["host"]} saved', "green")
 
         return 0

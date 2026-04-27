@@ -30,6 +30,8 @@ SSH-Tool comes with a variety of features to manage your SSH configurations effi
 - **Remove a Host:** Remove hosts from your SSH config.
 - **List All Hosts:** Get a comprehensive list of all the hosts in your SSH config.
 - **Connect to a Host:** Initiate a connection to a specified host directly.
+- **Edit a Host:** Update hostname, user, port and Wake-on-LAN MAC addresses for an existing host.
+- **Wake-on-LAN Before Connect:** Send magic packets (up to two MAC addresses per host), wait for ping response, then start SSH password login.
 - **Edit SSH Config File:** Open and edit your SSH config file with your preferred editor.
 - **Cleanup SSH Keys:** Remove unused SSH keys from your directory.
 
@@ -37,14 +39,13 @@ SSH-Tool comes with a variety of features to manage your SSH configurations effi
 
 This tool can be configured with Environment Variables:
 
-| Variable               | Description                                                                     | Default               |
-|------------------------|---------------------------------------------------------------------------------|-----------------------|
-| `SSH_CLI_CONFIG_FILE`  | Path to the SSH config file (will be created if nonexitent)                     | `~/.ssh/config`       |
-| `SSH_CLI_KEY_DIR`      | Path to the directory where the keys are stored (will be created if nonexitent) | `~/.ssh/keys`nano`    |
-| `SSH_CLI_KEY_TYPE`     | Type of generated ssh keys                                                      | `ed25519`             |
-| `SSH_CLI_DEFAULT_USER` | The default user for creating new ssh hosts                                     | `$USER`               |
-| `SSH_CLI_DEFAULT_PORT` | The default port for creating new ssh hosts                                     | `22`                  |
-| `SSH_CLI_EDITOR`       | The editor to use for editing the ssh config file                               | `$EDITOR` else `nano` |
+- `SSH_CLI_CONFIG_FILE`: Path to the SSH config file (created if it does not exist). Default: `~/.ssh/config`
+- `SSH_CLI_KEY_DIR`: Path to the directory where keys are stored (created if it does not exist). Default: `~/.ssh/keys`
+- `SSH_CLI_METADATA_PATH`: Path to the metadata file for host-specific MAC addresses. Default: `~/.ssh/ssh-cli-metadata.json`
+- `SSH_CLI_KEY_TYPE`: Type of generated SSH keys. Default: `ed25519`
+- `SSH_CLI_DEFAULT_USER`: Default user for creating new SSH hosts. Default: `$USER`
+- `SSH_CLI_DEFAULT_PORT`: Default port for creating new SSH hosts. Default: `22`
+- `SSH_CLI_EDITOR`: Editor used for editing the SSH config file. Default: `$EDITOR` else `nano`
 
 ## Contributing
 

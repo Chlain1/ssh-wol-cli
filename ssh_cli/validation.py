@@ -1,8 +1,52 @@
+import re
+
 import validators
 from inquirer.errors import ValidationError
 from sshconf import read_ssh_config
 
 from .config import CONFIG_FILE_PATH
+
+MAC_REGEX = re.compile(r"^[0-9A-Fa-f]{2}([:-][0-9A-Fa-f]{2}){5}$")
+
+
+def normalize_mac_address(value: str) -> str:
+    """Normalize a MAC address to lower-case colon notation."""
+    mac_address = value.strip().replace("-", ":").lower()
+
+    if not MAC_REGEX.match(mac_address):
+        raise ValueError(f"Invalid MAC address: {value}")
+
+    return mac_address
+
+
+def parse_mac_addresses(value: str | None, max_count: int = 2) -> list[str]:
+    """Parse and validate a comma-separated MAC address list."""
+    if not value:
+        return []
+
+    addresses = [entry.strip() for entry in value.split(",") if entry.strip()]
+
+    if len(addresses) > max_count:
+        raise ValueError(f"At most {max_count} MAC addresses are allowed")
+
+    parsed_addresses: list[str] = []
+    for address in addresses:
+        normalized = normalize_mac_address(address)
+        if normalized in parsed_addresses:
+            raise ValueError("Duplicate MAC addresses are not allowed")
+        parsed_addresses.append(normalized)
+
+    return parsed_addresses
+
+
+def is_valid_mac_addresses(_, x):
+    """Validate optional comma-separated MAC addresses for Wake-on-LAN."""
+    try:
+        parse_mac_addresses(x)
+    except ValueError as exc:
+        raise ValidationError(x, reason=str(exc))
+
+    return True
 
 
 def is_number(_, x):

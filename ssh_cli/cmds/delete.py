@@ -7,6 +7,7 @@ from termcolor import cprint
 from .interface import Command
 from ..config import CONFIG_FILE_PATH
 from ..lib import select_host, confirm_action
+from ..metadata import remove_host_macs
 
 
 class Delete(Command):
@@ -57,4 +58,5 @@ class Delete(Command):
         # remove host
         c.remove(host)
         c.write(CONFIG_FILE_PATH)
+        remove_host_macs(host)
         cprint(f'Removed host {host}', "green")

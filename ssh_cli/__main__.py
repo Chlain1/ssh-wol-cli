@@ -4,11 +4,19 @@ from importlib.metadata import version
 import inquirer
 from termcolor import cprint
 
-from .cmds import CreateCmd, ConnectCmd, DeleteCmd, EditorCmd, ListCmd, ShowHostCmd, CleanupCmd
+from .cmds import CreateCmd, ConnectCmd, DeleteCmd, EditCmd, EditorCmd, ListCmd, ShowHostCmd, CleanupCmd
 from .cmds.interface import Command
-from .config import CONFIG_FILE_PATH, KEY_DIR_PATH, KEY_TYPE, DEFAULT_USER, SSH_DEFAULT_PORT, EDITOR
+from .config import (
+    CONFIG_FILE_PATH,
+    KEY_DIR_PATH,
+    METADATA_FILE_PATH,
+    KEY_TYPE,
+    DEFAULT_USER,
+    SSH_DEFAULT_PORT,
+    EDITOR,
+)
 
-COMMANDS = [ListCmd(), ShowHostCmd(), ConnectCmd(), CreateCmd(), DeleteCmd(), EditorCmd(), CleanupCmd()]
+COMMANDS = [ListCmd(), ShowHostCmd(), ConnectCmd(), CreateCmd(), EditCmd(), DeleteCmd(), EditorCmd(), CleanupCmd()]
 
 
 def _show_title():
@@ -40,6 +48,7 @@ class ShowCLIConfig(Command):
         cprint("Configuration", "green")
         cprint(f"Config file path: {CONFIG_FILE_PATH}")
         cprint(f"Key directory path: {KEY_DIR_PATH}")
+        cprint(f"Metadata file path: {METADATA_FILE_PATH}")
         cprint(f"Key type: {KEY_TYPE}")
         cprint(f"Default user: {DEFAULT_USER}")
         cprint(f"Default port: {SSH_DEFAULT_PORT}")

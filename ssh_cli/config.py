@@ -6,6 +6,7 @@ from termcolor import cprint
 
 CONFIG_FILE_PATH = os.getenv("SSH_CLI_CONFIG_PATH") or str(Path.home()) + "/.ssh/config"
 KEY_DIR_PATH = os.getenv("SSH_CLI_KEY_DIR") or str(Path.home()) + "/.ssh/keys"
+METADATA_FILE_PATH = os.getenv("SSH_CLI_METADATA_PATH") or str(Path.home()) + "/.ssh/ssh-cli-metadata.json"
 KEY_TYPE = os.getenv("SSH_CLI_KEY_TYPE") or "ed25519"
 DEFAULT_USER = os.getenv("SSH_CLI_DEFAULT_USER") or os.getenv("USER")
 SSH_DEFAULT_PORT = os.getenv("SSH_CLI_DEFAULT_PORT") or 22
