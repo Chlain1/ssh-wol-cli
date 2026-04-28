@@ -11,7 +11,7 @@ from wakeonlan import send_magic_packet
 from .interface import Command
 from ..config import CONFIG_FILE_PATH
 from ..lib import select_host
-from ..metadata import get_host_macs
+from ..metadata import get_host_macs, get_host_wol_target_ip
 from ..validation import is_not_empty
 
 PING_TIMEOUT_SECONDS = 60
@@ -40,18 +40,15 @@ def _wait_until_pingable(hostname: str, timeout_seconds: int = PING_TIMEOUT_SECO
     return False
 
 
-def _send_wol_packets(hostname: str, mac_addresses: list[str]) -> bool:
-    """Send one Wake-on-LAN magic packet per configured MAC address."""
+def _send_wol_packets(wol_target_ip: str, mac_addresses: list[str]) -> bool:
+    """Send one Wake-on-LAN magic packet per configured MAC address to a target IP."""
     for mac_address in mac_addresses:
         try:
-            send_magic_packet(mac_address, ip_address=hostname)
-        except OSError:
-            # Some networks reject unicast WOL targets, so we retry as broadcast.
-            try:
-                send_magic_packet(mac_address)
-            except OSError as exc:
-                cprint(f"Could not send Wake-on-LAN packet for {mac_address}: {exc}", "red")
-                return False
+            # Match `wakeonlan -i <ip> <mac>` behavior.
+            send_magic_packet(mac_address, ip_address=wol_target_ip)
+        except OSError as exc:
+            cprint(f"Could not send Wake-on-LAN packet for {mac_address}: {exc}", "red")
+            return False
 
     return True
 
@@ -163,14 +160,22 @@ class Connect(Command):
 
         hostname = host_config.get("hostname") or host
         mac_addresses = get_host_macs(host)
+        wol_target_ip = get_host_wol_target_ip(host)
 
         if not mac_addresses:
             cprint(f"No Wake-on-LAN MAC addresses configured for host '{host}', trying direct SSH.", "yellow")
             code = subprocess.run(["ssh", host])
             return code.returncode
 
-        cprint(f"Sending Wake-on-LAN packets to {hostname} ...", "green")
-        if not _send_wol_packets(hostname, mac_addresses):
+        if not wol_target_ip:
+            cprint(
+                f"No Wake-on-LAN target IP configured for host '{host}'. Configure it via edit/macs command.",
+                "red",
+            )
+            return 1
+
+        cprint(f"Sending Wake-on-LAN packets to {wol_target_ip} ...", "green")
+        if not _send_wol_packets(wol_target_ip, mac_addresses):
             return 1
 
         cprint(f"Waiting up to {PING_TIMEOUT_SECONDS}s for {hostname} to become pingable ...", "yellow")

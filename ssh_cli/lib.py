@@ -5,7 +5,7 @@ from sshconf import read_ssh_config, SshConfig
 from termcolor import colored
 
 from .config import CONFIG_FILE_PATH, CANCEL
-from .metadata import get_host_macs
+from .metadata import get_host_macs, get_host_wol_target_ip
 
 
 def get_public_key(host, c) -> str | None:
@@ -60,7 +60,12 @@ def confirm_action(message=None) -> bool:
     return inquirer.confirm(message or "Are you sure?", default=False)
 
 
-def show_host_config(host: str, c: SshConfig, mac_addresses: list[str] | None = None):
+def show_host_config(
+    host: str,
+    c: SshConfig,
+    mac_addresses: list[str] | None = None,
+    wol_target_ip: str | None = None,
+):
     """
     This function prints the configuration of a host.
     :param host: The host name
@@ -73,8 +78,14 @@ def show_host_config(host: str, c: SshConfig, mac_addresses: list[str] | None = 
     if mac_addresses is None:
         mac_addresses = get_host_macs(host)
 
+    if wol_target_ip is None:
+        wol_target_ip = get_host_wol_target_ip(host)
+
     if mac_addresses:
         print(f"\twol_macs: {colored(', '.join(mac_addresses), attrs=['underline'])}")
+
+    if wol_target_ip:
+        print(f"\twol_target_ip: {colored(wol_target_ip, attrs=['underline'])}")
 
     if public_key := get_public_key(host, c):
         print(f"Public key: {colored(public_key, attrs=['reverse'])}")

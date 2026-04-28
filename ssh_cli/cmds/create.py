@@ -9,18 +9,20 @@ from termcolor import cprint
 from .interface import Command
 from ..config import DEFAULT_USER, SSH_DEFAULT_PORT, CONFIG_FILE_PATH, KEY_DIR_PATH, KEY_TYPE
 from ..lib import show_host_config
-from ..metadata import set_host_macs
+from ..metadata import set_host_wol_config
 from ..validation import (
     is_valid_hostname,
     is_not_empty,
     host_exists,
     is_number,
     is_valid_mac_addresses,
+    is_valid_wol_target_ip,
     parse_mac_addresses,
+    parse_wol_target_ip,
 )
 
 
-def _create_key_file(host) -> str or int or None:
+def _create_key_file(host) -> str | None:
     if not inquirer.confirm("Do you want to use a passkey?", default=True):
         return None
     password = inquirer.password("Enter a password for the key file (optional)") or ""
@@ -88,12 +90,23 @@ class CreateHostConfig(Command):
                 validate=is_valid_mac_addresses,
                 default=""
             ),
+            inquirer.Text(
+                "wol_target_ip",
+                message="Wake-on-LAN target IP (wakeonlan -i target)",
+                validate=is_valid_wol_target_ip,
+                default=lambda ans: ans["hostname"] if validators.ipv4(ans["hostname"]) else ""
+            ),
         ]
 
         if (answers := inquirer.prompt(host_config_questions)) is None:
             return 1
 
         wol_macs = parse_mac_addresses(answers["wol_macs"])
+        wol_target_ip = parse_wol_target_ip(answers["wol_target_ip"])
+
+        if wol_macs and not wol_target_ip:
+            cprint("Wake-on-LAN target IP is required when MAC addresses are configured.", "red")
+            return 1
 
         c.add(answers["host"], Hostname=answers["hostname"], User=answers["user"], Port=answers["port"])
 
@@ -101,7 +114,12 @@ class CreateHostConfig(Command):
             c.set(answers["host"], IdentityFile=key_file)
 
         print("Host configured with the following configuration:")
-        show_host_config(answers["host"], c, mac_addresses=wol_macs)
+        show_host_config(
+            answers["host"],
+            c,
+            mac_addresses=wol_macs,
+            wol_target_ip=wol_target_ip,
+        )
 
         if not inquirer.confirm("Do you want to save this host?", default=True):
             if key_file:
@@ -111,7 +129,7 @@ class CreateHostConfig(Command):
             return 1
 
         c.write(CONFIG_FILE_PATH)
-        set_host_macs(answers["host"], wol_macs)
+        set_host_wol_config(answers["host"], wol_macs, wol_target_ip)
         cprint(f'Host {answers["host"]} saved', "green")
 
         return 0

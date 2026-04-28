@@ -8,6 +8,7 @@ from ssh_cli.validation import (
     is_valid_hostname,
     normalize_mac_address,
     parse_mac_addresses,
+    parse_wol_target_ip,
 )
 
 
@@ -49,3 +50,11 @@ def test_parse_mac_addresses():
 
     with pytest.raises(ValueError):
         parse_mac_addresses("AA:BB:CC:DD:EE:FF,AA-BB-CC-DD-EE-FF")
+
+
+def test_parse_wol_target_ip():
+    assert parse_wol_target_ip("") == ""
+    assert parse_wol_target_ip("192.168.1.255") == "192.168.1.255"
+
+    with pytest.raises(ValueError):
+        parse_wol_target_ip("example.com")

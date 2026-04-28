@@ -39,10 +39,33 @@ def parse_mac_addresses(value: str | None, max_count: int = 2) -> list[str]:
     return parsed_addresses
 
 
+def parse_wol_target_ip(value: str | None) -> str:
+    """Parse and validate a Wake-on-LAN target IPv4 address."""
+    target_ip = (value or "").strip()
+
+    if not target_ip:
+        return ""
+
+    if not validators.ipv4(target_ip):
+        raise ValueError("Wake-on-LAN target IP must be a valid IPv4 address")
+
+    return target_ip
+
+
 def is_valid_mac_addresses(_, x):
     """Validate optional comma-separated MAC addresses for Wake-on-LAN."""
     try:
         parse_mac_addresses(x)
+    except ValueError as exc:
+        raise ValidationError(x, reason=str(exc))
+
+    return True
+
+
+def is_valid_wol_target_ip(_, x):
+    """Validate optional Wake-on-LAN target IPv4 address."""
+    try:
+        parse_wol_target_ip(x)
     except ValueError as exc:
         raise ValidationError(x, reason=str(exc))
 
