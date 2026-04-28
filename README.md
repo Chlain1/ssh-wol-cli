@@ -31,6 +31,7 @@ SSH-Tool comes with a variety of features to manage your SSH configurations effi
 - **List All Hosts:** Get a comprehensive list of all the hosts in your SSH config.
 - **Connect to a Host:** Initiate a connection to a specified host directly.
 - **Edit a Host:** Update hostname, user, port and Wake-on-LAN MAC addresses for an existing host.
+- **Manage MAC Addresses:** Add or update Wake-on-LAN MAC addresses for an existing host directly.
 - **Wake-on-LAN Before Connect:** Send magic packets (up to two MAC addresses per host), wait for ping response, then start SSH password login.
 - **Edit SSH Config File:** Open and edit your SSH config file with your preferred editor.
 - **Cleanup SSH Keys:** Remove unused SSH keys from your directory.

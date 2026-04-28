@@ -5,4 +5,5 @@ from .delete import Delete as DeleteCmd
 from .edit import EditHostConfig as EditCmd
 from .editor import Editor as EditorCmd
 from .list import ListHosts as ListCmd
+from .mac_addresses import MacAddresses as MacAddressesCmd
 from .show_host import ShowHost as ShowHostCmd

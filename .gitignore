@@ -8,6 +8,7 @@
 dist
 .pytest_cache
 requirements.txt
+__pycache__/
 
 # Environments
 .env
