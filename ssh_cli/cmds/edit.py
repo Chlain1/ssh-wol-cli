@@ -45,12 +45,8 @@ class EditHostConfig(Command):
                 default=host_config.get("hostname") or host,
                 validate=is_valid_hostname,
             ),
-            inquirer.Text(
-                "user",
-                message="Username",
-                default=host_config.get("user") or DEFAULT_USER or "",
-                validate=is_not_empty,
-            ),
+                # Do not keep username in the config; always ask at connect time.
+                # We therefore don't prompt to edit a stored `User` value here.
             inquirer.Text(
                 "port",
                 message="Port",
@@ -82,7 +78,8 @@ class EditHostConfig(Command):
             return 1
 
         c.set(host, Hostname=answers["hostname"])
-        c.set(host, User=answers["user"])
+        # Intentionally do not set `User` on the host configuration so the
+        # username is not stored in the ssh config file.
         c.set(host, Port=answers["port"])
 
         print("Updated host configuration:")

@@ -4,7 +4,7 @@ from importlib.metadata import version
 import inquirer
 from termcolor import cprint
 
-from .cmds import CreateCmd, ConnectCmd, DeleteCmd, EditCmd, EditorCmd, ListCmd, MacAddressesCmd, ShowHostCmd, CleanupCmd
+from .cmds import CreateCmd, ConnectCmd, DeleteCmd, EditCmd, EditorCmd, ListCmd, MacAddressesCmd, ShowHostCmd, CleanupCmd, RemoveUserCmd
 from .cmds.interface import Command
 from .config import (
     CONFIG_FILE_PATH,
@@ -16,7 +16,7 @@ from .config import (
     EDITOR,
 )
 
-COMMANDS = [ListCmd(), ShowHostCmd(), ConnectCmd(), CreateCmd(), EditCmd(), MacAddressesCmd(), DeleteCmd(), EditorCmd(), CleanupCmd()]
+COMMANDS = [ListCmd(), ShowHostCmd(), ConnectCmd(), CreateCmd(), EditCmd(), MacAddressesCmd(), DeleteCmd(), EditorCmd(), CleanupCmd(), RemoveUserCmd()]
 
 
 def _show_title():

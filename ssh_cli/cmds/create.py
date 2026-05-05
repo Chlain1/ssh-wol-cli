@@ -108,7 +108,10 @@ class CreateHostConfig(Command):
             cprint("Wake-on-LAN target IP is required when MAC addresses are configured.", "red")
             return 1
 
-        c.add(answers["host"], Hostname=answers["hostname"], User=answers["user"], Port=answers["port"])
+        # Do not write the `User` to the ssh config so the username is always
+        # prompted at connection time. Store only hostname and port (and
+        # identityfile if created).
+        c.add(answers["host"], Hostname=answers["hostname"], Port=answers["port"])
 
         if key_file := _create_key_file(answers["host"]):
             c.set(answers["host"], IdentityFile=key_file)

@@ -3,7 +3,6 @@ import subprocess
 import time
 
 import inquirer
-import pexpect
 from sshconf import read_ssh_config
 from termcolor import cprint
 from wakeonlan import send_magic_packet
@@ -53,18 +52,13 @@ def _send_wol_packets(wol_target_ip: str, mac_addresses: list[str]) -> bool:
     return True
 
 
-def _prompt_credentials(default_user: str | None) -> tuple[str, str] | None:
-    """Ask for SSH username/password used by password authentication."""
+def _prompt_credentials(default_user: str | None) -> str | None:
+    """Ask for the SSH username used by password authentication."""
     questions = [
         inquirer.Text(
             "username",
             message="Enter SSH username",
             default=default_user or "",
-            validate=is_not_empty,
-        ),
-        inquirer.Password(
-            "password",
-            message="Enter SSH password",
             validate=is_not_empty,
         ),
     ]
@@ -73,11 +67,11 @@ def _prompt_credentials(default_user: str | None) -> tuple[str, str] | None:
     if answers is None:
         return None
 
-    return answers["username"], answers["password"]
+    return answers["username"]
 
 
-def _connect_with_password(host: str, username: str, password: str) -> int:
-    """Open an interactive SSH session and answer initial auth prompts."""
+def _connect_with_ssh(host: str, username: str) -> int:
+    """Start an interactive SSH session and let ssh handle the password prompt."""
     ssh_args = [
         "-o",
         "PreferredAuthentications=password",
@@ -88,47 +82,8 @@ def _connect_with_password(host: str, username: str, password: str) -> int:
         host,
     ]
 
-    child = pexpect.spawn("ssh", ssh_args, encoding="utf-8")
-
-    while True:
-        prompt_index = child.expect(
-            [
-                r"Are you sure you want to continue connecting \(yes/no(?:/\[fingerprint\])?\)\?",
-                r"[Pp]assword:",
-                r"Permission denied",
-                pexpect.EOF,
-                pexpect.TIMEOUT,
-            ],
-            timeout=30,
-        )
-
-        if prompt_index == 0:
-            child.sendline("yes")
-            continue
-
-        if prompt_index == 1:
-            child.sendline(password)
-            break
-
-        if prompt_index == 2:
-            cprint("SSH login failed: Permission denied", "red")
-            child.close()
-            return 1
-
-        if prompt_index == 3:
-            child.close()
-            return child.exitstatus if child.exitstatus is not None else 1
-
-        cprint("Timed out waiting for SSH authentication prompt.", "red")
-        child.close()
-        return 1
-
-    try:
-        child.interact()
-    finally:
-        child.close()
-
-    return child.exitstatus if child.exitstatus is not None else 0
+    code = subprocess.run(["ssh", *ssh_args])
+    return code.returncode
 
 
 class Connect(Command):
@@ -184,11 +139,12 @@ class Connect(Command):
             return 1
 
         cprint(f"Host '{host}' is reachable. Starting SSH login ...", "green")
-        credentials = _prompt_credentials(host_config.get("user"))
+        # Always prompt for username without pre-filling it from the config.
+        credentials = _prompt_credentials(None)
 
         if credentials is None:
             cprint("SSH login cancelled.", "yellow")
             return 1
 
-        username, password = credentials
-        return _connect_with_password(host, username, password)
+        username = credentials
+        return _connect_with_ssh(host, username)

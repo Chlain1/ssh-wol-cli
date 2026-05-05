@@ -7,3 +7,4 @@ from .editor import Editor as EditorCmd
 from .list import ListHosts as ListCmd
 from .mac_addresses import MacAddresses as MacAddressesCmd
 from .show_host import ShowHost as ShowHostCmd
+from .remove_user import RemoveUser as RemoveUserCmd
