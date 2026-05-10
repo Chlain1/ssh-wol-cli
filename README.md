@@ -3,6 +3,8 @@
 ![PyPI](https://img.shields.io/pypi/v/ssh-cli)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/ValentinKolb/ssh-cli/poetry.yml)
 
+This is a Fork of [ssh-cli](https://github.com/ValentinKolb/ssh-cli) with extended wake-on-lan Features
+
 This CLI tool allows you to create and manage your SSH config file, streamlining the process of handling SSH
 connections.
 
